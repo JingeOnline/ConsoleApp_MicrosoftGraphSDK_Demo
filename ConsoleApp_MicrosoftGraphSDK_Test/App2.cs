@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.Security;
+using DriveUpload = Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 
 namespace ConsoleApp_MicrosoftGraphSDK_Test
 {
@@ -35,13 +37,15 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
             {
                 AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
             };
-            var userCredential = new UsernamePasswordCredential(username,password,tenantId,clientId,options);
+            var userCredential = new UsernamePasswordCredential(username, password, tenantId, clientId, options);
 
             GraphServiceClient graphClient = new GraphServiceClient(userCredential, scopes);
             try
             {
                 //await deleteFileById(graphClient);
-                await getRootChildrenListAsync(graphClient);
+                //await getRootChildrenListAsync(graphClient);
+                //await uploadFileToFolderById(graphClient);
+                await uploadBigFile(graphClient);
 
             }
             //读取ODataError错误中的详细信息才能了解为什么请求失败。
@@ -84,6 +88,88 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
                 Console.WriteLine("Package=" + child.Package);
                 Console.WriteLine("WebUrl=" + child.WebUrl);
                 Console.WriteLine();
+            }
+        }
+
+        /// <summary>
+        /// 根据文件夹ID，上传文件到指定文件夹
+        /// </summary>
+        /// <param name="graphClient"></param>
+        /// <returns></returns>
+        public async Task uploadFileToFolderById(GraphServiceClient graphClient)
+        {
+            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            using (FileStream localFileStream = File.OpenRead(Path.Combine(userFolder, "Pictures/TestForUpload-1.jpg")))
+            {
+                var uploadedItem = await graphClient
+                    .Drives["b!giXh4U7g8UyCVVetRQoTyNCYhPEGiWpFimImDbiPA913eE1reuE0TqFkDQLDmZny"]
+                    .Items["01ZVDGC6N6Y2GOVW7725BZO354PWSELRRZ"]
+                    .ItemWithPath("TestForUpload-1.jpg") //别忘了指定上传之后的文件名
+                    .Content.PutAsync(localFileStream);
+                Console.WriteLine(uploadedItem.Id);
+                Console.WriteLine(uploadedItem.WebUrl);
+            }
+        }
+
+        /// <summary>
+        /// 上传大文件，支持断点续传。
+        /// 官方文档：https://learn.microsoft.com/en-us/graph/sdks/large-file-upload?tabs=csharp
+        /// </summary>
+        /// <param name="graphClient"></param>
+        /// <returns></returns>
+        public async Task uploadBigFile(GraphServiceClient graphClient)
+        {
+            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string filePath = Path.Combine(userFolder, "Pictures/苍龙逐日win复刻版.rar");
+
+            using var fileStream = File.OpenRead(filePath);
+
+            // Use properties to specify the conflict behavior
+            // using DriveUpload = Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
+            var uploadSessionRequestBody = new DriveUpload.CreateUploadSessionPostRequestBody
+            {
+                Item = new DriveItemUploadableProperties
+                {
+                    AdditionalData = new Dictionary<string, object>
+                    {
+                        { "@microsoft.graph.conflictBehavior", "replace" },
+                    },
+                },
+            };
+
+            // Create the upload session
+            // itemPath does not need to be a path to an existing item
+            var myDrive = await graphClient.Me.Drive.GetAsync();
+            var uploadSession = await graphClient.Drives[myDrive?.Id]
+                .Items["root"]
+                .ItemWithPath("苍龙逐日win复刻版.rar")
+                .CreateUploadSession
+                .PostAsync(uploadSessionRequestBody);
+
+            // Max slice size must be a multiple of 320 KiB
+            int maxSliceSize = 320 * 1024;
+            var fileUploadTask = new LargeFileUploadTask<DriveItem>(
+                uploadSession, fileStream, maxSliceSize, graphClient.RequestAdapter);
+
+            var totalLength = fileStream.Length;
+            // Create a callback that is invoked after each slice is uploaded
+            IProgress<long> progress = new Progress<long>(prog =>
+            {
+                Console.WriteLine($"Uploaded {prog} bytes of {totalLength} bytes");
+            });
+
+            try
+            {
+                // Upload the file
+                var uploadResult = await fileUploadTask.UploadAsync(progress);
+
+                Console.WriteLine(uploadResult.UploadSucceeded ?
+                    $"Upload complete, item ID: {uploadResult.ItemResponse.Id}" :
+                    "Upload failed");
+            }
+            catch (ODataError ex)
+            {
+                Console.WriteLine($"Error uploading: {ex.Error?.Message}");
             }
         }
     }
