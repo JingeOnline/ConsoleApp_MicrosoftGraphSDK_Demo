@@ -16,11 +16,11 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
 
         static async Task Main(string[] args)
         {
-            //App1 app = new App1(AppNameKey1);
-            //await app.RunAsync();
-
-            App2 app = new App2(AppNameKey2);
+            App1 app = new App1(AppNameKey1);
             await app.RunAsync();
+
+            //App2 app = new App2(AppNameKey2);
+            //await app.RunAsync();
         }
 
 

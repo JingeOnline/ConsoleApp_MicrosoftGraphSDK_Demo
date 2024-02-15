@@ -40,7 +40,8 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
             try
             {
                 //await deleteFileById(graphClient);
-                await getRootChildrenListAsync(graphClient);
+                //await getRootChildrenListAsync(graphClient);
+                await uploadFileToFolderById(graphClient);
 
             }
             //读取ODataError错误中的详细信息才能了解为什么请求失败。
@@ -168,12 +169,12 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
         public async Task uploadFileToFolderById(GraphServiceClient graphClient)
         {
             string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            using (FileStream localFileStream = File.OpenRead(Path.Combine(userFolder, "Pictures/TestForUpload-1.jpg")))
+            using (FileStream localFileStream = File.OpenRead(Path.Combine(userFolder, "Pictures/t2.jpg")))
             {
                 var uploadedItem = await graphClient
                     .Drives["b!h2paA_qdHkWMFMnaxQ6505czytzKNNJBhQafMxIUPLnZtSSEzeB5Q6gCbA9lBz0K"]
                     .Items["01C4GJWGN44II7IQNCGZFKHLTSVBFC6AYX"]
-                    .ItemWithPath("TestForUpload-1.jpg") //别忘了指定上传之后的文件名
+                    .ItemWithPath("t2.jpg") //别忘了指定上传之后的文件名
                     .Content.PutAsync(localFileStream);
                 Console.WriteLine(uploadedItem.Id);
                 Console.WriteLine(uploadedItem.WebUrl);
