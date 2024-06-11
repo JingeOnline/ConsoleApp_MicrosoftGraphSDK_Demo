@@ -169,12 +169,12 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
         public async Task uploadFileToFolderById(GraphServiceClient graphClient)
         {
             string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            using (FileStream localFileStream = File.OpenRead(Path.Combine(userFolder, "Pictures/t2.jpg")))
+            using (FileStream localFileStream = File.OpenRead(Path.Combine(userFolder, "Pictures/t4.jpg")))
             {
                 var uploadedItem = await graphClient
                     .Drives["b!h2paA_qdHkWMFMnaxQ6505czytzKNNJBhQafMxIUPLnZtSSEzeB5Q6gCbA9lBz0K"]
-                    .Items["01C4GJWGN44II7IQNCGZFKHLTSVBFC6AYX"]
-                    .ItemWithPath("t2.jpg") //别忘了指定上传之后的文件名
+                    .Items["01C4GJWGN44II7IQNCGZFKHLTSVBFC6AYX"] //这里指定上传到“PublicShare”文件夹
+                    .ItemWithPath("t4.jpg") //别忘了指定上传之后的文件名
                     .Content.PutAsync(localFileStream);
                 Console.WriteLine(uploadedItem.Id);
                 Console.WriteLine(uploadedItem.WebUrl);
