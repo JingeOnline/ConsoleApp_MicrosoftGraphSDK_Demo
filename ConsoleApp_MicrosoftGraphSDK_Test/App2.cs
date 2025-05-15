@@ -45,7 +45,7 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
                 //await deleteFileById(graphClient);
                 //await getRootChildrenListAsync(graphClient);
                 //await uploadFileToFolderById(graphClient);
-                await uploadBigFile(graphClient);
+                await uploadBigFile(graphClient, @"C:\Users\jinge\Pictures\ImportedPhoto_1739953924163.jpg");
 
             }
             //读取ODataError错误中的详细信息才能了解为什么请求失败。
@@ -117,11 +117,12 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
         /// </summary>
         /// <param name="graphClient"></param>
         /// <returns></returns>
-        public async Task uploadBigFile(GraphServiceClient graphClient)
+        public async Task uploadBigFile(GraphServiceClient graphClient, string filePath)
         {
-            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string filePath = Path.Combine(userFolder, "Pictures/苍龙逐日win复刻版.rar");
-
+            //string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            //string filePath = Path.Combine(userFolder, "Pictures/3P2A9987.JPG");
+            string fileName = Path.GetFileName(filePath);
+            //这样写using，则fileStream对象会在代码块的末尾被释放，也就是当前方法的末尾。
             using var fileStream = File.OpenRead(filePath);
 
             // Use properties to specify the conflict behavior
@@ -142,7 +143,7 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
             var myDrive = await graphClient.Me.Drive.GetAsync();
             var uploadSession = await graphClient.Drives[myDrive?.Id]
                 .Items["root"]
-                .ItemWithPath("苍龙逐日win复刻版.rar")
+                .ItemWithPath(fileName)
                 .CreateUploadSession
                 .PostAsync(uploadSessionRequestBody);
 

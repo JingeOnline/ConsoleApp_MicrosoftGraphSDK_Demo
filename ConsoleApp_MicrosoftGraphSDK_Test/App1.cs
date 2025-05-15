@@ -41,7 +41,7 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
             {
                 //await deleteFileById(graphClient);
                 //await getRootChildrenListAsync(graphClient);
-                await uploadFileToFolderById(graphClient);
+                await uploadFileToFolderById(graphClient, @"C:\Users\jinge\Pictures\ArtWork - 16X9\TST (16).jpg");
 
             }
             //读取ODataError错误中的详细信息才能了解为什么请求失败。
@@ -166,15 +166,16 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
         /// </summary>
         /// <param name="graphClient"></param>
         /// <returns></returns>
-        public async Task uploadFileToFolderById(GraphServiceClient graphClient)
+        public async Task uploadFileToFolderById(GraphServiceClient graphClient, string filePath)
         {
-            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            using (FileStream localFileStream = File.OpenRead(Path.Combine(userFolder, "Pictures/t5.png")))
+            string fileName = Path.GetFileName(filePath);
+            //string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            using (FileStream localFileStream = File.OpenRead(filePath))
             {
                 var uploadedItem = await graphClient
                     .Drives["b!h2paA_qdHkWMFMnaxQ6505czytzKNNJBhQafMxIUPLnZtSSEzeB5Q6gCbA9lBz0K"]
                     .Items["01C4GJWGN44II7IQNCGZFKHLTSVBFC6AYX"] //这里指定上传到“PublicShare”文件夹
-                    .ItemWithPath("t5.png") //别忘了指定上传之后的文件名
+                    .ItemWithPath(fileName) //别忘了指定上传之后的文件名
                     .Content.PutAsync(localFileStream);
                 Console.WriteLine(uploadedItem.Id);
                 Console.WriteLine(uploadedItem.WebUrl);
