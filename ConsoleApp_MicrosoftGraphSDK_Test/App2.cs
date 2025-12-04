@@ -45,7 +45,7 @@ namespace ConsoleApp_MicrosoftGraphSDK_Test
                 //await deleteFileById(graphClient);
                 //await getRootChildrenListAsync(graphClient);
                 //await uploadFileToFolderById(graphClient);
-                await uploadBigFile(graphClient, @"C:\Users\jinge\Pictures\ImportedPhoto_1739953924163.jpg");
+                await uploadBigFile(graphClient, @"C:\Users\jinge\Pictures\钟楚曦\钟楚曦_10.jpg");
 
             }
             //读取ODataError错误中的详细信息才能了解为什么请求失败。
